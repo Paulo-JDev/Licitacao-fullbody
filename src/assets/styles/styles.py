@@ -95,3 +95,62 @@ def apply_table_custom_style(table_view):
             font-size: 16px;
         }
     """)
+
+def get_dark_theme_input_style():
+    """
+    Retorna um estilo CSS completo para janelas de formulário em temas escuros,
+    incluindo containers, labels e campos de entrada.
+    """
+    return """
+        /* Define o fundo da própria janela/dialog como escuro */
+        QDialog, QWidget {
+            background-color: #1E1E1E;
+        }
+
+        /* Estilo para os containers (painéis que agrupam os campos) */
+        QFrame, QGroupBox {
+            background-color: #2C2F3F; /* Fundo do painel um pouco mais claro */
+            border-radius: 6px;
+        }
+
+        /* Estilo para os títulos dos GroupBox (ex: "Setor Responsável") */
+        QGroupBox::title {
+            color: #F0F0F0;
+            font-weight: bold;
+            subcontrol-origin: margin;
+            subcontrol-position: top left;
+            padding: 5px 10px;
+        }
+
+        /* Estilo para todos os textos (Labels) */
+        QLabel {
+            background-color: transparent; /* Garante que não tenham fundo próprio */
+            color: #F0F0F0;               /* Cor do texto clara */
+            font-size: 14px;
+        }
+
+        /* Estilo para os campos de entrada (mantido e aprimorado) */
+        QLineEdit, QTextEdit, QPlainTextEdit, QDateEdit, QComboBox {
+            background-color: #1E1E1E; /* Fundo dos campos de texto */
+            color: #F0F0F0;
+            border: 1px solid #4E648B;
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QDateEdit:focus, QComboBox:focus {
+            border: 1px solid #8AB4F7; /* Borda azul ao focar */
+        }
+
+        /* Estilos específicos para QComboBox (mantido) */
+        QComboBox::drop-down {
+            border: none;
+        }
+
+        QComboBox QAbstractItemView {
+            background-color: #2C2F3F;
+            color: #F0F0F0;
+            selection-background-color: #4E648B;
+        }
+    """

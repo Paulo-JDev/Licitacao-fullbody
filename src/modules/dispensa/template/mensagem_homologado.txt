@@ -1,0 +1,1 @@
+Teste para Automação de aviso de homologado para os setores responsáveis/interessados: {{numero-da-cp}}, {{NUP}}, {{numero da dispensa}}.

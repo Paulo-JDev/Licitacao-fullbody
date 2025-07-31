@@ -17,6 +17,7 @@ import os
 import subprocess
 import sqlite3
 from paths import AGENTES_RESPONSAVEIS_FILE, DATA_DISPENSA_ELETRONICA_PATH, ORGANIZACOES_FILE, load_config_path_id
+from assets.styles.styles import get_dark_theme_input_style
 
 def number_to_text(number):
     numbers_in_words = ["um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze"]
@@ -52,6 +53,7 @@ class EditarDadosWindow(QMainWindow):
 
         # Carrega todas as referências e widgets
         self.carregar_referencias()
+        self.setStyleSheet(get_dark_theme_input_style())
 
         # Inicialização da interface gráfica e configuração da UI
         self.setup_ui()

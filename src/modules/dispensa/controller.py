@@ -5,6 +5,7 @@ from modules.dispensa.dialogs.salvar_tabela import DataManager
 from modules.dispensa.dialogs.gerar_tabela import TabelaResumidaManager
 from modules.dispensa.dialogs.edit_data.edit_data import EditarDadosWindow
 from modules.dispensa.database_manager.db_manager import DatabaseManager
+from paths import CONTROLE_DADOS, TEMPLATE_DISPENSA_DIR
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 import pandas as pd
@@ -12,6 +13,8 @@ from paths import CONTROLE_DADOS
 import sqlite3
 import os
 from modules.dispensa.dados_api.api_consulta import ConsultaAPIDialog
+import webbrowser
+from urllib.parse import quote
 
 class DispensaEletronicaController(QObject): 
     def __init__(self, icons, view, model):
@@ -177,8 +180,57 @@ class DispensaEletronicaController(QObject):
             # Use `self.model_add` que se refere a uma instância de `DispensaEletronicaModel`
             self.model_add.insert_or_update_data(data)
             self.view.refresh_model()  # Atualiza a visualização da tabela
+            if data.get('situacao') == 'Homologado':
+                print("Situação 'Homologado' detectada. Preparando mensagem...")
+                self._preparar_email_homologado(data)
         except AttributeError as e:
             QMessageBox.warning(self.view, "Erro", f"Ocorreu um erro ao salvar os dados: {str(e)}")
+
+    def _preparar_email_homologado(self, data):
+        """
+        Lê o template da mensagem, preenche com os dados e abre o cliente de e-mail.
+        """
+        destinatario_email = data.get("email", "")
+        if not destinatario_email:
+            print("Não foi possível enviar a mensagem: campo de e-mail vazio.")
+            QMessageBox.warning(self.view, "E-mail não encontrado", 
+                                "Não foi possível preparar a mensagem automática pois o campo 'E-mail' do responsável não está preenchido.")
+            return
+
+        try:
+            # Caminho para o novo arquivo de template
+            caminho_template = TEMPLATE_DISPENSA_DIR / "mensagem_homologado.txt"
+
+            # Lê o conteúdo do template
+            with open(caminho_template, 'r', encoding='utf-8') as f:
+                mensagem_base = f.read()
+
+            # Substitui as variáveis pelos dados reais
+            mensagem_final = mensagem_base.replace("{{numero-da-cp}}", str(data.get("cp", "[N/A]")))
+            mensagem_final = mensagem_final.replace("{{NUP}}", str(data.get("nup", "[N/A]")))
+            mensagem_final = mensagem_final.replace("{{numero da dispensa}}", str(data.get("id_processo", "[N/A]")))
+            
+            # Prepara o assunto do e-mail
+            assunto = f"Homologação da Dispensa Eletrônica: {data.get('id_processo')}"
+
+            # Codifica o assunto e o corpo da mensagem para o formato de URL
+            assunto_codificado = quote(assunto)
+            mensagem_codificada = quote(mensagem_final)
+
+            # Cria o link 'mailto' e o abre no cliente de e-mail padrão do usuário
+            url_mailto = f"mailto:{destinatario_email}?subject={assunto_codificado}&body={mensagem_codificada}"
+            webbrowser.open(url_mailto)
+            
+            print(f"Cliente de e-mail aberto para: {destinatario_email}")
+
+        except FileNotFoundError:
+            print(f"Erro: Arquivo de template não encontrado em {caminho_template}")
+            QMessageBox.critical(self.view, "Erro de Template",
+                                 f"O arquivo de modelo 'mensagem_homologado.txt' não foi encontrado.")
+        except Exception as e:
+            print(f"Ocorreu um erro inesperado ao preparar a mensagem: {e}")
+            QMessageBox.critical(self.view, "Erro Inesperado",
+                                 f"Ocorreu um erro ao preparar a mensagem automática: {e}")
 
     def carregar_tabela(self):
         filepath, _ = QFileDialog.getOpenFileName(self.view, "Abrir arquivo de tabela", "", "Tabelas (*.xlsx *.xls *.ods)")
